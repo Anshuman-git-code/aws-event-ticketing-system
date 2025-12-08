@@ -6,12 +6,14 @@
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           FRONTEND LAYER                                 │
 │  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │  React Application (S3 + CloudFront)                             │  │
+│  │  Vanilla JavaScript Application (S3 + CloudFront)                │  │
+│  │  URL: https://d2nkn01x3icawa.cloudfront.net                      │  │
 │  │  - User Authentication (Cognito)                                 │  │
 │  │  - Event Browsing & Creation                                     │  │
-│  │  - Registration & Payment (Stripe)                               │  │
-│  │  - Ticket Management                                             │  │
-│  │  - Organizer Dashboard                                           │  │
+│  │  - Registration & Payment (Mock Stripe)                          │  │
+│  │  - Ticket Management & Download                                  │  │
+│  │  - Organizer Dashboard & Analytics                               │  │
+│  │  - View Registrants Feature                                      │  │
 │  └──────────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
@@ -57,15 +59,17 @@
 │                          LAMBDA FUNCTIONS LAYER                          │
 │  ┌──────────────────────────────────────────────────────────────────┐  │
 │  │  Phase 2 Functions (us-east-1)                                   │  │
-│  │  ├─ createEvent          - Create new event                      │  │
-│  │  ├─ listEvents           - List all events                       │  │
-│  │  ├─ getEvent             - Get event details                     │  │
-│  │  └─ createRegistration   - Register for event                    │  │
+│  │  ├─ createEvent              - Create new event                  │  │
+│  │  ├─ getEvents                - List all events                   │  │
+│  │  ├─ getEventById             - Get event details                 │  │
+│  │  ├─ createRegistration       - Register for event                │  │
+│  │  ├─ getMyRegistrations       - Get user's registrations          │  │
+│  │  └─ getEventRegistrations    - Get event's registrants (NEW)     │  │
 │  └──────────────────────────────────────────────────────────────────┘  │
 │                                                                          │
 │  ┌──────────────────────────────────────────────────────────────────┐  │
 │  │  Phase 3 Functions (eu-north-1)                                  │  │
-│  │  ├─ processPayment       - Create Stripe payment intent          │  │
+│  │  ├─ processPayment       - Mock payment processing               │  │
 │  │  ├─ generateTicket       - Generate PDF ticket with QR code      │  │
 │  │  ├─ getTicketDownload    - Get pre-signed S3 URL                 │  │
 │  │  └─ validateTicket       - Validate QR code at entry             │  │
@@ -249,10 +253,10 @@ Validate Status → Update as "used" → Return Valid/Invalid
 ## Technology Stack
 
 ### Frontend
-- React 19.2.1
-- AWS Amplify 6.15.8
-- Stripe React Elements
-- Axios for API calls
+- Vanilla JavaScript (HTML5, CSS3, ES6+)
+- AWS Amplify SDK for Cognito
+- Stripe.js for payment UI
+- Fetch API for HTTP requests
 
 ### Backend
 - Node.js 18.x
