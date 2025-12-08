@@ -13,10 +13,12 @@ exports.handler = async (event) => {
         const body = JSON.parse(event.body || '{}');
         const { eventId, registrationId, amount, currency = 'usd' } = body;
         
-        // For testing: Create a mock payment intent
+        // For testing: Create a mock payment intent with proper format
+        const timestamp = Date.now();
+        const randomSecret = Math.random().toString(36).substring(2, 15);
         const mockPaymentIntent = {
-            id: `pi_test_${Date.now()}`,
-            client_secret: `pi_test_${Date.now()}_secret_test`,
+            id: `pi_${timestamp}`,
+            client_secret: `pi_${timestamp}_secret_${randomSecret}`,
             amount: Math.round(amount * 100),
             currency,
             status: 'requires_payment_method'

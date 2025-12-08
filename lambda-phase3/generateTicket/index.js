@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, GetCommand, PutCommand } = require('@aws-sdk/lib-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, PutCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
 const region = process.env.AWS_REGION_OVERRIDE || 'us-east-1';
@@ -11,7 +11,39 @@ exports.handler = async (event) => {
     console.log('Generate Ticket Event:', JSON.stringify(event));
     
     try {
-        const { registrationId, eventId, userId } = event;
+        // Parse body if coming from API Gateway
+        const body = event.body ? JSON.parse(event.body) : event;
+        const { registrationId, eventId } = body;
+        
+        if (!registrationId || !eventId) {
+            return {
+                statusCode: 400,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({ error: 'registrationId and eventId are required' })
+            };
+        }
+        
+        // Get registration to find userId
+        const regResult = await docClient.send(new GetCommand({
+            TableName: process.env.REGISTRATIONS_TABLE || 'event-ticketing-registrations-dev',
+            Key: { registrationId }
+        }));
+        
+        if (!regResult.Item) {
+            return {
+                statusCode: 404,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({ error: 'Registration not found' })
+            };
+        }
+        
+        const userId = regResult.Item.userId;
         
         // Generate ticket ID
         const ticketId = `TKT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -50,12 +82,30 @@ exports.handler = async (event) => {
                 qrCode: qrData,
                 status: 'valid',
                 s3Key,
-                generatedAt: new Date().toISOString()
+                generatedAt: new Date().toISOString(),
+                eventName: eventData.name,
+                eventDate: eventData.date
+            }
+        }));
+        
+        // Update registration with ticketId and payment status
+        const { UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+        await docClient.send(new UpdateCommand({
+            TableName: process.env.REGISTRATIONS_TABLE || 'event-ticketing-registrations-dev',
+            Key: { registrationId },
+            UpdateExpression: 'SET ticketId = :tid, paymentStatus = :status',
+            ExpressionAttributeValues: {
+                ':tid': ticketId,
+                ':status': 'completed'
             }
         }));
         
         return {
             statusCode: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
             body: JSON.stringify({ message: 'Ticket generated', ticketId, s3Key })
         };
         
@@ -63,6 +113,10 @@ exports.handler = async (event) => {
         console.error('Error:', error);
         return {
             statusCode: 500,
+            headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
             body: JSON.stringify({ error: error.message })
         };
     }
