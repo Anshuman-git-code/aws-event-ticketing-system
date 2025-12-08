@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Ticketing System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">🎫 Event Ticketing</div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#" onclick="showPage('home')">Home</a>
+                <a href="#" onclick="showPage('events')" id="navEvents">Events</a>
+                <a href="#" onclick="showPage('myEvents')" id="navMyEvents" style="display:none">My Events</a>
+                <a href="#" onclick="showPage('myTickets')" id="navMyTickets" style="display:none">My Tickets</a>
+                <a href="#" onclick="showPage('createEvent')" id="navCreate" style="display:none">Create Event</a>
+                <a href="#" onclick="showPage('scanner')" id="navScanner" style="display:none">Validate Ticket</a>
+                <a href="#" onclick="showPage('login')" id="navLogin">Login</a>
+                <a href="#" onclick="logout()" id="navLogout" style="display:none">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container main-content">
+        <!-- Home Page -->
+        <div id="homePage" class="page active">
+            <div class="hero">
+                <h1>Welcome to Event Ticketing System</h1>
+                <p>Create events, sell tickets, and manage attendees - all in one place</p>
+                <div class="hero-buttons">
+                    <button onclick="showPage('events')" class="btn btn-primary">Browse Events</button>
+                    <button onclick="showPage('login')" class="btn btn-secondary">Get Started</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login/Signup Page -->
+        <div id="loginPage" class="page">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <button class="tab-btn active" onclick="showAuthTab('login')">Login</button>
+                    <button class="tab-btn" onclick="showAuthTab('signup')">Sign Up</button>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form active">
+                    <h2>Login</h2>
+                    <input type="email" id="loginEmail" placeholder="Email" class="input">
+                    <input type="password" id="loginPassword" placeholder="Password" class="input">
+                    <button onclick="login()" class="btn btn-primary btn-block">Login</button>
+                    <div id="loginError" class="error"></div>
+                </div>
+                
+                <!-- Signup Form -->
+                <div id="signupForm" class="auth-form">
+                    <h2>Sign Up</h2>
+                    <input type="text" id="signupName" placeholder="Full Name" class="input">
+                    <input type="email" id="signupEmail" placeholder="Email" class="input">
+                    <input type="password" id="signupPassword" placeholder="Password (min 8 chars)" class="input">
+                    <select id="signupRole" class="input">
+                        <option value="Attendees">Attendee</option>
+                        <option value="Organizers">Organizer</option>
+                    </select>
+                    <button onclick="signup()" class="btn btn-primary btn-block">Sign Up</button>
+                    <div id="signupError" class="error"></div>
+                    <div id="signupSuccess" class="success"></div>
+                </div>
+                
+                <!-- Verification Form -->
+                <div id="verifyForm" class="auth-form">
+                    <h2>Verify Email</h2>
+                    <p>Please enter the verification code sent to your email</p>
+                    <input type="text" id="verifyCode" placeholder="Verification Code" class="input">
+                    <button onclick="verifyEmail()" class="btn btn-primary btn-block">Verify</button>
+                    <div id="verifyError" class="error"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events List Page -->
+        <div id="eventsPage" class="page">
+            <h1>All Events</h1>
+            <div id="eventsList" class="events-grid"></div>
+        </div>
+
+        <!-- Create Event Page -->
+        <div id="createEventPage" class="page">
+            <h1>Create New Event</h1>
+            <div class="form-container">
+                <input type="text" id="eventName" placeholder="Event Name" class="input">
+                <textarea id="eventDescription" placeholder="Event Description" class="input" rows="4"></textarea>
+                <input type="datetime-local" id="eventDate" class="input">
+                <input type="text" id="eventLocation" placeholder="Location" class="input">
+                <input type="number" id="eventCapacity" placeholder="Capacity" class="input" min="1">
+                <input type="number" id="eventPrice" placeholder="Price ($)" class="input" min="0" step="0.01">
+                <button onclick="createEvent()" class="btn btn-primary">Create Event</button>
+                <div id="createEventError" class="error"></div>
+                <div id="createEventSuccess" class="success"></div>
+            </div>
+        </div>
+
+        <!-- My Events Page (Organizer) -->
+        <div id="myEventsPage" class="page">
+            <h1>My Events</h1>
+            <div id="myEventsList" class="events-grid"></div>
+        </div>
+
+        <!-- My Tickets Page (Attendee) -->
+        <div id="myTicketsPage" class="page">
+            <h1>My Tickets</h1>
+            <div id="myTicketsList" class="tickets-grid"></div>
+        </div>
+
+        <!-- Event Details Page -->
+        <div id="eventDetailsPage" class="page">
+            <div id="eventDetailsContent"></div>
+        </div>
+
+        <!-- QR Scanner Page (Organizer) -->
+        <div id="scannerPage" class="page">
+            <h1>Validate Ticket</h1>
+            <div class="form-container">
+                <p style="text-align:center;margin-bottom:2rem;">Enter ticket ID or QR code to validate</p>
+                <input type="text" id="ticketIdInput" placeholder="Ticket ID or QR Code" class="input">
+                <button onclick="validateTicket()" class="btn btn-primary btn-block">Validate Ticket</button>
+                <div id="validationResult" style="margin-top:2rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="config.js?v=2"></script>
+    <script src="auth.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+</body>
+</html>

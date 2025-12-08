@@ -1,0 +1,425 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Event Ticketing System - Phase 3: Payment and Ticket Generation (eu-north-1)'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+  ProjectName:
+    Type: String
+    Default: event-ticketing
+  StripeSecretKey:
+    Type: String
+    NoEcho: true
+    Description: Stripe Secret Key (test mode)
+  TicketsBucketName:
+    Type: String
+    Description: S3 bucket name for tickets
+  EventsTableName:
+    Type: String
+    Default: event-ticketing-events-dev
+  RegistrationsTableName:
+    Type: String
+    Default: event-ticketing-registrations-dev
+  TicketsTableName:
+    Type: String
+    Default: event-ticketing-tickets-dev
+
+Resources:
+  # Lambda Execution Role for Phase 3
+  Phase3LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-phase3-lambda-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !Sub 'arn:aws:dynamodb:us-east-1:${AWS::AccountId}:table/${EventsTableName}'
+                  - !Sub 'arn:aws:dynamodb:us-east-1:${AWS::AccountId}:table/${RegistrationsTableName}'
+                  - !Sub 'arn:aws:dynamodb:us-east-1:${AWS::AccountId}:table/${TicketsTableName}'
+                  - !Sub 'arn:aws:dynamodb:us-east-1:${AWS::AccountId}:table/${EventsTableName}/index/*'
+                  - !Sub 'arn:aws:dynamodb:us-east-1:${AWS::AccountId}:table/${RegistrationsTableName}/index/*'
+                  - !Sub 'arn:aws:dynamodb:us-east-1:${AWS::AccountId}:table/${TicketsTableName}/index/*'
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:PutObjectAcl
+                Resource:
+                  - !Sub 'arn:aws:s3:::${TicketsBucketName}/*'
+
+  # Process Payment Lambda
+  ProcessPaymentFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-processPayment-${Environment}'
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt Phase3LambdaRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          STRIPE_SECRET_KEY: !Ref StripeSecretKey
+          REGISTRATIONS_TABLE: !Ref RegistrationsTableName
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return {
+              statusCode: 200,
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ message: 'Placeholder - Deploy actual code' })
+            };
+          };
+
+  # Generate Ticket Lambda
+  GenerateTicketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-generateTicket-${Environment}'
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt Phase3LambdaRole.Arn
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          TICKETS_TABLE: !Ref TicketsTableName
+          TICKETS_BUCKET: !Ref TicketsBucketName
+          REGISTRATIONS_TABLE: !Ref RegistrationsTableName
+          EVENTS_TABLE: !Ref EventsTableName
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return {
+              statusCode: 200,
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ message: 'Placeholder - Deploy actual code' })
+            };
+          };
+
+  # Get Ticket Download Lambda
+  GetTicketDownloadFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-getTicketDownload-${Environment}'
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt Phase3LambdaRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          TICKETS_TABLE: !Ref TicketsTableName
+          TICKETS_BUCKET: !Ref TicketsBucketName
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return {
+              statusCode: 200,
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ message: 'Placeholder - Deploy actual code' })
+            };
+          };
+
+  # Validate Ticket Lambda
+  ValidateTicketFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-validateTicket-${Environment}'
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt Phase3LambdaRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          TICKETS_TABLE: !Ref TicketsTableName
+      Code:
+        ZipFile: |
+          exports.handler = async (event) => {
+            return {
+              statusCode: 200,
+              headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ message: 'Placeholder - Deploy actual code' })
+            };
+          };
+
+  # API Gateway
+  Phase3ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${ProjectName}-phase3-api-${Environment}'
+      Description: Event Ticketing System - Phase 3 API (Payments & Tickets)
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  # /payment-intent resource
+  PaymentIntentResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ParentId: !GetAtt Phase3ApiGateway.RootResourceId
+      PathPart: payment-intent
+
+  # /tickets resource
+  TicketsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ParentId: !GetAtt Phase3ApiGateway.RootResourceId
+      PathPart: tickets
+
+  # /tickets/{id} resource
+  TicketIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ParentId: !Ref TicketsResource
+      PathPart: '{id}'
+
+  # /tickets/{id}/download resource
+  TicketDownloadResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ParentId: !Ref TicketIdResource
+      PathPart: download
+
+  # /validate resource
+  ValidateResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ParentId: !GetAtt Phase3ApiGateway.RootResourceId
+      PathPart: validate
+
+  # OPTIONS /payment-intent (CORS)
+  PaymentIntentOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ResourceId: !Ref PaymentIntentResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # POST /payment-intent
+  CreatePaymentIntentMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ResourceId: !Ref PaymentIntentResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ProcessPaymentFunction.Arn}/invocations'
+
+  # OPTIONS /tickets (CORS)
+  TicketsOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ResourceId: !Ref TicketsResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+            ResponseTemplates:
+              application/json: ''
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # POST /tickets (Generate Ticket)
+  GenerateTicketMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ResourceId: !Ref TicketsResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GenerateTicketFunction.Arn}/invocations'
+
+  # GET /tickets/{id}/download
+  GetTicketDownloadMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ResourceId: !Ref TicketDownloadResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTicketDownloadFunction.Arn}/invocations'
+
+  # POST /validate
+  ValidateTicketMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      ResourceId: !Ref ValidateResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ValidateTicketFunction.Arn}/invocations'
+
+  # Lambda Permissions
+  ProcessPaymentPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ProcessPaymentFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Phase3ApiGateway}/*'
+
+  GenerateTicketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GenerateTicketFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Phase3ApiGateway}/*'
+
+  GetTicketDownloadPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetTicketDownloadFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Phase3ApiGateway}/*'
+
+  ValidateTicketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ValidateTicketFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Phase3ApiGateway}/*'
+
+  # API Deployment
+  Phase3ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - PaymentIntentOptionsMethod
+      - CreatePaymentIntentMethod
+      - TicketsOptionsMethod
+      - GenerateTicketMethod
+      - GetTicketDownloadMethod
+      - ValidateTicketMethod
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+
+  Phase3ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref Phase3ApiGateway
+      DeploymentId: !Ref Phase3ApiDeployment
+      StageName: !Ref Environment
+      Description: !Sub '${Environment} stage for Phase 3'
+      TracingEnabled: true
+
+Outputs:
+  Phase3ApiGatewayId:
+    Description: Phase 3 API Gateway ID
+    Value: !Ref Phase3ApiGateway
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiGatewayId'
+
+  Phase3ApiGatewayUrl:
+    Description: Phase 3 API Gateway URL
+    Value: !Sub 'https://${Phase3ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiGatewayUrl'
+
+  ProcessPaymentFunctionArn:
+    Description: Process Payment Lambda ARN
+    Value: !GetAtt ProcessPaymentFunction.Arn
+
+  GenerateTicketFunctionArn:
+    Description: Generate Ticket Lambda ARN
+    Value: !GetAtt GenerateTicketFunction.Arn
+
+  GetTicketDownloadFunctionArn:
+    Description: Get Ticket Download Lambda ARN
+    Value: !GetAtt GetTicketDownloadFunction.Arn
+
+  ValidateTicketFunctionArn:
+    Description: Validate Ticket Lambda ARN
+    Value: !GetAtt ValidateTicketFunction.Arn

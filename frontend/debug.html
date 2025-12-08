@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug - Role Detection</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .info { background: #e3f2fd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #c8e6c9; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffcdd2; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Role Detection Debug Tool</h1>
+    
+    <div class="info">
+        <h3>Instructions:</h3>
+        <ol>
+            <li>Login to the main site first</li>
+            <li>Come back to this page</li>
+            <li>Click "Check Current User"</li>
+        </ol>
+    </div>
+
+    <button onclick="checkUser()">Check Current User</button>
+    <button onclick="clearAndReload()">Clear Cache & Reload</button>
+
+    <div id="output"></div>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <script src="config.js"></script>
+    
+    <script>
+        AWS.config.region = CONFIG.region;
+        
+        const poolData = {
+            UserPoolId: CONFIG.userPoolId,
+            ClientId: CONFIG.userPoolClientId
+        };
+        
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+        
+        function checkUser() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<div class="info">Checking...</div>';
+            
+            const currentUser = userPool.getCurrentUser();
+            
+            if (!currentUser) {
+                output.innerHTML = '<div class="error"><h3>❌ No User Logged In</h3><p>Please login on the main site first, then come back here.</p></div>';
+                return;
+            }
+            
+            currentUser.getSession((err, session) => {
+                if (err) {
+                    output.innerHTML = `<div class="error"><h3>❌ Session Error</h3><pre>${JSON.stringify(err, null, 2)}</pre></div>`;
+                    return;
+                }
+                
+                if (!session.isValid()) {
+                    output.innerHTML = '<div class="error"><h3>❌ Session Invalid</h3><p>Please login again.</p></div>';
+                    return;
+                }
+                
+                currentUser.getUserAttributes((err, attributes) => {
+                    if (err) {
+                        output.innerHTML = `<div class="error"><h3>❌ Error Getting Attributes</h3><pre>${JSON.stringify(err, null, 2)}</pre></div>`;
+                        return;
+                    }
+                    
+                    // Find role attribute
+                    const roleAttr = attributes.find(attr => attr.Name === 'custom:role');
+                    const emailAttr = attributes.find(attr => attr.Name === 'email');
+                    const nameAttr = attributes.find(attr => attr.Name === 'name');
+                    
+                    let html = '<div class="success"><h3>✅ User Found</h3>';
+                    html += `<p><strong>Email:</strong> ${emailAttr ? emailAttr.Value : 'N/A'}</p>`;
+                    html += `<p><strong>Name:</strong> ${nameAttr ? nameAttr.Value : 'N/A'}</p>`;
+                    html += `<p><strong>Role:</strong> ${roleAttr ? roleAttr.Value : '❌ NOT SET'}</p>`;
+                    html += '</div>';
+                    
+                    html += '<div class="info"><h3>All Attributes:</h3><pre>' + JSON.stringify(attributes, null, 2) + '</pre></div>';
+                    
+                    if (!roleAttr) {
+                        html += '<div class="error"><h3>⚠️ Problem Found</h3>';
+                        html += '<p>The custom:role attribute is not set for this user.</p>';
+                        html += '<p><strong>Solution:</strong> This user was created before the role system was implemented.</p>';
+                        html += '<p>Please create a new account to test the role system.</p>';
+                        html += '</div>';
+                    } else {
+                        html += '<div class="success"><h3>✅ Role System Working</h3>';
+                        html += `<p>User role is: <strong>${roleAttr.Value}</strong></p>`;
+                        if (roleAttr.Value === 'Organizers') {
+                            html += '<p>This user should see: Create Event, My Events, Validate Ticket</p>';
+                        } else {
+                            html += '<p>This user should see: My Tickets</p>';
+                        }
+                        html += '</div>';
+                    }
+                    
+                    output.innerHTML = html;
+                });
+            });
+        }
+        
+        function clearAndReload() {
+            localStorage.clear();
+            sessionStorage.clear();
+            location.reload(true);
+        }
+    </script>
+</body>
+</html>
