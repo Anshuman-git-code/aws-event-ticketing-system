@@ -32,7 +32,7 @@
 
 ### 2. AWS Lambda
 **Usage:**
-- 8 functions total
+- 10 functions total
 - 500,000 invocations/month
 - Average 512 MB memory
 - Average 1 second execution time
