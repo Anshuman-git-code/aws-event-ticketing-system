@@ -38,7 +38,7 @@ This is a **production-ready** event ticketing system with all features implemen
 
 ### Ticket Generation ✅
 - ✅ PDF ticket generation with Lambda
-- ✅ QR code embedding
+- ✅ QR code embedding (Not Fully Done)
 - ✅ Validation at entry points
 
 ### Hosting & Storage ✅
@@ -63,21 +63,9 @@ This is a **production-ready** event ticketing system with all features implemen
 - **Infrastructure**: CloudFormation (IaC)
 
 ### System Architecture
-```
-Users (Browser)
-    ↓
-CloudFront (CDN)
-    ↓
-S3 (Static Website)
-    ↓
-API Gateway → Lambda Functions → DynamoDB
-    ↓                    ↓
-Cognito (Auth)      S3 (Tickets)
-    ↓
-Stripe (Payments - Mock)
-```
 
-See [docs/ARCHITECTURE_DIAGRAM.md](docs/ARCHITECTURE_DIAGRAM.md) for detailed diagrams.
+<img width="1086" height="733" alt="Screenshot 2025-12-09 at 12 30 44 PM" src="https://github.com/user-attachments/assets/5fd30dba-2da0-4306-94d8-8816511e8ccc" />
+
 
 ## 📁 Project Structure
 
