@@ -649,23 +649,29 @@ async function downloadTicket(ticketId) {
     showLoading(true);
     
     try {
-        const response = await fetch(`${CONFIG.paymentsAPI}/tickets/${ticketId}/download`, {
+        console.log('Downloading ticket:', ticketId);
+        const url = `${CONFIG.paymentsAPI}/tickets/${ticketId}/download`;
+        console.log('Download URL:', url);
+        
+        const response = await fetch(url, {
             headers: {
                 'Authorization': userToken
             }
         });
         
+        console.log('Response status:', response.status);
         const data = await response.json();
+        console.log('Response data:', data);
         
         if (response.ok && data.downloadUrl) {
             // Open download URL in new tab
             window.open(data.downloadUrl, '_blank');
         } else {
-            alert('Ticket download not available yet. Please try again in a moment.');
+            alert('Ticket download not available: ' + (data.error || 'Unknown error'));
         }
     } catch (error) {
         console.error('Error downloading ticket:', error);
-        alert('Failed to download ticket. Please try again.');
+        alert('Failed to download ticket: ' + error.message);
     } finally {
         showLoading(false);
     }

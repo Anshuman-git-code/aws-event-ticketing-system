@@ -12,7 +12,7 @@ exports.handler = async (event) => {
     console.log('Get Ticket Download Event:', JSON.stringify(event));
     
     try {
-        const ticketId = event.pathParameters?.ticketId || event.ticketId;
+        const ticketId = event.pathParameters?.ticketId || event.pathParameters?.id || event.ticketId;
         
         if (!ticketId) {
             return {
