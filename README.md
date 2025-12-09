@@ -19,6 +19,23 @@ This is a **production-ready** event ticketing system with all features implemen
 - ✅ **Analytics Dashboard**: Event statistics and registrant tracking
 - ✅ **Scalable Architecture**: Serverless AWS infrastructure
 
+---
+## 🏗️ Architecture
+
+### AWS Services Used
+- **Frontend**: S3 + CloudFront (CDN)
+- **Authentication**: AWS Cognito User Pool
+- **API**: API Gateway (2 regions: us-east-1, eu-north-1)
+- **Compute**: AWS Lambda (10 functions)
+- **Database**: DynamoDB (3 tables, 10 GSIs)
+- **Storage**: S3 (tickets bucket)
+- **Infrastructure**: CloudFormation (IaC)
+
+### System Architecture
+
+<img width="1086" height="733" alt="Screenshot 2025-12-09 at 12 30 44 PM" src="https://github.com/user-attachments/assets/5fd30dba-2da0-4306-94d8-8816511e8ccc" />
+
+---
 ## 📋 Project Requirements - ALL COMPLETED ✅
 
 ### User & Admin Interfaces ✅
@@ -212,31 +229,8 @@ lambda-phase3/
 - Cognito: $0.00 (Free Tier)
 - **Total: $13.39/month**
 
-#### 2. Detailed Cost Breakdown ✅
-- ✅ Per-service cost analysis
-- ✅ Usage assumptions documented
-- ✅ Pricing calculations shown
-- ✅ Free tier benefits identified
 
-#### 3. Cost at Different Scales ✅
-- ✅ Small Scale (100 events/month): ~$13/month
-- ✅ Medium Scale (500 events/month): ~$45/month
-- ✅ Large Scale (2,000 events/month): ~$250/month
-- ✅ Enterprise Scale (10,000 events/month): ~$1,500/month
-
-#### 4. External Service Costs ✅
-- ✅ Stripe payment processing fees
-- ✅ Transaction fee calculations
-- ✅ Cost pass-through strategies
-
-#### 5. Cost Optimization Strategies ✅
-- ✅ DynamoDB optimization (reserved capacity, TTL)
-- ✅ Lambda optimization (right-sizing, layers)
-- ✅ S3 optimization (lifecycle policies, compression)
-- ✅ CloudFront optimization (caching, compression)
-- ✅ API Gateway optimization (caching, HTTP API)
-
-#### 6. Scalability Plan ✅
+#### 2. Scalability Plan ✅
 
 **Phase 1: Current (0-10K users)**
 - Cost: ~$13/month
@@ -260,29 +254,6 @@ lambda-phase3/
 - Provisioned capacity
 - Advanced monitoring
 
-#### 7. Performance Targets by Scale ✅
-- API response times
-- Page load times
-- Ticket generation times
-- Concurrent user capacity
-
-#### 8. Total Cost of Ownership (TCO) ✅
-- Year 1 projections at different scales
-- Comparison with traditional hosting
-- 50-90% cost savings demonstrated
-
-#### 9. Revenue Model Suggestions ✅
-- Transaction fee model
-- Subscription model
-- Hybrid model
-
-**Verification**:
-- ✅ Comprehensive cost analysis
-- ✅ Multiple scaling scenarios
-- ✅ Optimization strategies provided
-- ✅ Performance targets defined
-- ✅ ROI considerations included
-
 ---
 
 ### CloudFormation Templates ✅
@@ -295,7 +266,6 @@ cloudformation/
 └── deploy-phase3.sh             # Phase 3 deployment
 ```
 
----
 
 ## Infrastructure as Code
 
@@ -319,22 +289,6 @@ cloudformation/
    - API Resources
 
 ---
-
-## 🏗️ Architecture
-
-### AWS Services Used
-- **Frontend**: S3 + CloudFront (CDN)
-- **Authentication**: AWS Cognito User Pool
-- **API**: API Gateway (2 regions: us-east-1, eu-north-1)
-- **Compute**: AWS Lambda (10 functions)
-- **Database**: DynamoDB (3 tables, 10 GSIs)
-- **Storage**: S3 (tickets bucket)
-- **Infrastructure**: CloudFormation (IaC)
-
-### System Architecture
-
-<img width="1086" height="733" alt="Screenshot 2025-12-09 at 12 30 44 PM" src="https://github.com/user-attachments/assets/5fd30dba-2da0-4306-94d8-8816511e8ccc" />
-
 ## 💻 Technology Stack
 
 ### Frontend
