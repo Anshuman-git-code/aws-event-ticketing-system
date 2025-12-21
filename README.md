@@ -7,7 +7,16 @@ A fully functional serverless event management platform built on AWS that enable
 This is a **production-ready** event ticketing system with all features implemented and deployed.
 
 ### Live Demo
-**🌐 Application URL**: https://d2nkn01x3icawa.cloudfront.net
+
+## Attendee Account
+
+https://github.com/user-attachments/assets/68170efe-40f8-4700-8d50-db19fed7c7ee
+
+## Organizer Account
+
+
+https://github.com/user-attachments/assets/03c8ab6f-89d7-4e93-bbe4-8a4dbb036672
+
 
 ### Key Features
 - ✅ **Dual User Interfaces**: Separate portals for Organizers and Attendees
