@@ -3,23 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Ticketing System</title>
+    <title>Event Ticketing System - Professional Event Management</title>
+    <meta name="description" content="Professional event ticketing system for creating, managing, and selling event tickets with secure payment processing.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎫</text></svg>">
+    
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="container">
-            <div class="nav-brand">🎫 Event Ticketing</div>
+            <div class="nav-brand">Event Ticketing</div>
             <div class="nav-menu" id="navMenu">
-                <a href="#" onclick="showPage('home')">Home</a>
-                <a href="#" onclick="showPage('events')" id="navEvents">Events</a>
-                <a href="#" onclick="showPage('myEvents')" id="navMyEvents" style="display:none">My Events</a>
-                <a href="#" onclick="showPage('myTickets')" id="navMyTickets" style="display:none">My Tickets</a>
-                <a href="#" onclick="showPage('createEvent')" id="navCreate" style="display:none">Create Event</a>
-                <a href="#" onclick="showPage('scanner')" id="navScanner" style="display:none">Validate Ticket</a>
-                <a href="#" onclick="showPage('login')" id="navLogin">Login</a>
-                <a href="#" onclick="logout()" id="navLogout" style="display:none">Logout</a>
+                <a href="#" onclick="showPage('home')">🏠 Home</a>
+                <a href="#" onclick="showPage('events')" id="navEvents">🎪 Events</a>
+                <a href="#" onclick="showPage('myEvents')" id="navMyEvents" style="display:none">📊 My Events</a>
+                <a href="#" onclick="showPage('myTickets')" id="navMyTickets" style="display:none">🎫 My Tickets</a>
+                <a href="#" onclick="showPage('createEvent')" id="navCreate" style="display:none">➕ Create Event</a>
+                <a href="#" onclick="showPage('scanner')" id="navScanner" style="display:none">🔍 Validate Ticket</a>
+                <a href="#" onclick="showPage('login')" id="navLogin">🔐 Login</a>
+                <a href="#" onclick="logout()" id="navLogout" style="display:none">👋 Logout</a>
             </div>
         </div>
     </nav>
@@ -29,11 +39,32 @@
         <!-- Home Page -->
         <div id="homePage" class="page active">
             <div class="hero">
-                <h1>Welcome to Event Ticketing System</h1>
-                <p>Create events, sell tickets, and manage attendees - all in one place</p>
+                <h1>Professional Event Management</h1>
+                <p>Create stunning events, sell tickets seamlessly, and manage attendees with our comprehensive ticketing platform</p>
                 <div class="hero-buttons">
-                    <button onclick="showPage('events')" class="btn btn-primary">Browse Events</button>
-                    <button onclick="showPage('login')" class="btn btn-secondary">Get Started</button>
+                    <button onclick="showPage('events')" class="btn btn-primary">🎪 Explore Events</button>
+                    <button onclick="showPage('login')" class="btn btn-secondary">🚀 Get Started</button>
+                </div>
+            </div>
+            
+            <!-- Features Section -->
+            <div style="margin-top: 4rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div style="text-align: center; padding: 2rem; background: white; border-radius: 1rem; box-shadow: var(--shadow-md);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎫</div>
+                        <h3 style="margin-bottom: 1rem; color: var(--gray-900);">Easy Ticket Sales</h3>
+                        <p style="color: var(--gray-600);">Create and sell tickets with secure payment processing and instant delivery</p>
+                    </div>
+                    <div style="text-align: center; padding: 2rem; background: white; border-radius: 1rem; box-shadow: var(--shadow-md);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                        <h3 style="margin-bottom: 1rem; color: var(--gray-900);">Real-time Analytics</h3>
+                        <p style="color: var(--gray-600);">Track sales, monitor attendance, and analyze event performance</p>
+                    </div>
+                    <div style="text-align: center; padding: 2rem; background: white; border-radius: 1rem; box-shadow: var(--shadow-md);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                        <h3 style="margin-bottom: 1rem; color: var(--gray-900);">Secure & Reliable</h3>
+                        <p style="color: var(--gray-600);">QR code validation, secure payments, and enterprise-grade security</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -83,21 +114,39 @@
 
         <!-- Events List Page -->
         <div id="eventsPage" class="page">
-            <h1>All Events</h1>
+            <h1>🎪 Discover Amazing Events</h1>
             <div id="eventsList" class="events-grid"></div>
         </div>
 
         <!-- Create Event Page -->
         <div id="createEventPage" class="page">
-            <h1>Create New Event</h1>
+            <h1>➕ Create New Event</h1>
             <div class="form-container">
-                <input type="text" id="eventName" placeholder="Event Name" class="input">
-                <textarea id="eventDescription" placeholder="Event Description" class="input" rows="4"></textarea>
-                <input type="datetime-local" id="eventDate" class="input">
-                <input type="text" id="eventLocation" placeholder="Location" class="input">
-                <input type="number" id="eventCapacity" placeholder="Capacity" class="input" min="1">
-                <input type="number" id="eventPrice" placeholder="Price ($)" class="input" min="0" step="0.01">
-                <button onclick="createEvent()" class="btn btn-primary">Create Event</button>
+                <div class="input-group">
+                    <label for="eventName">Event Name</label>
+                    <input type="text" id="eventName" placeholder="Enter event name" class="input">
+                </div>
+                <div class="input-group">
+                    <label for="eventDescription">Description</label>
+                    <textarea id="eventDescription" placeholder="Describe your event" class="input" rows="4"></textarea>
+                </div>
+                <div class="input-group">
+                    <label for="eventDate">Date & Time</label>
+                    <input type="datetime-local" id="eventDate" class="input">
+                </div>
+                <div class="input-group">
+                    <label for="eventLocation">Location</label>
+                    <input type="text" id="eventLocation" placeholder="Event location" class="input">
+                </div>
+                <div class="input-group">
+                    <label for="eventCapacity">Capacity</label>
+                    <input type="number" id="eventCapacity" placeholder="Maximum attendees" class="input" min="1">
+                </div>
+                <div class="input-group">
+                    <label for="eventPrice">Ticket Price ($)</label>
+                    <input type="number" id="eventPrice" placeholder="0.00" class="input" min="0" step="0.01">
+                </div>
+                <button onclick="createEvent()" class="btn btn-primary btn-block">🚀 Create Event</button>
                 <div id="createEventError" class="error"></div>
                 <div id="createEventSuccess" class="success"></div>
             </div>
@@ -105,13 +154,13 @@
 
         <!-- My Events Page (Organizer) -->
         <div id="myEventsPage" class="page">
-            <h1>My Events</h1>
+            <h1>📊 My Events Dashboard</h1>
             <div id="myEventsList" class="events-grid"></div>
         </div>
 
         <!-- My Tickets Page (Attendee) -->
         <div id="myTicketsPage" class="page">
-            <h1>My Tickets</h1>
+            <h1>🎫 My Tickets</h1>
             <div id="myTicketsList" class="tickets-grid"></div>
         </div>
 
@@ -122,11 +171,17 @@
 
         <!-- QR Scanner Page (Organizer) -->
         <div id="scannerPage" class="page">
-            <h1>Validate Ticket</h1>
+            <h1>🔍 Ticket Validation</h1>
             <div class="form-container">
-                <p style="text-align:center;margin-bottom:2rem;">Enter ticket ID or QR code to validate</p>
-                <input type="text" id="ticketIdInput" placeholder="Ticket ID or QR Code" class="input">
-                <button onclick="validateTicket()" class="btn btn-primary btn-block">Validate Ticket</button>
+                <div style="text-align:center;margin-bottom:2rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🎫</div>
+                    <p style="color: var(--gray-600);">Enter ticket ID or scan QR code to validate entry</p>
+                </div>
+                <div class="input-group">
+                    <label for="ticketIdInput">Ticket ID or QR Code</label>
+                    <input type="text" id="ticketIdInput" placeholder="Enter ticket ID or QR code data" class="input">
+                </div>
+                <button onclick="validateTicket()" class="btn btn-primary btn-block">🔍 Validate Ticket</button>
                 <div id="validationResult" style="margin-top:2rem;"></div>
             </div>
         </div>
@@ -136,6 +191,16 @@
     <div id="loadingOverlay" class="loading-overlay">
         <div class="spinner"></div>
     </div>
+
+    <!-- Footer -->
+    <footer style="background: var(--white); border-top: 1px solid var(--gray-200); padding: 2rem 0; margin-top: 4rem;">
+        <div class="container">
+            <div style="text-align: center; color: var(--gray-600);">
+                <p style="margin-bottom: 0.5rem;">&copy; 2024 Event Ticketing System. Professional event management made simple.</p>
+                <p style="font-size: var(--font-size-sm);">Secure • Reliable • Professional</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- Scripts -->
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>

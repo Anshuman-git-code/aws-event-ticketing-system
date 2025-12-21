@@ -1,7 +1,8 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, GetCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 
-const region = process.env.AWS_REGION_OVERRIDE || 'us-east-1';
+// Force us-east-1 region for DynamoDB since that's where the tables are
+const region = 'us-east-1';
 const dynamoClient = new DynamoDBClient({ region });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
@@ -9,23 +10,49 @@ exports.handler = async (event) => {
     console.log('Validate Ticket Event:', JSON.stringify(event));
     
     try {
-        const body = JSON.parse(event.body || '{}');
-        const { qrData } = body;
+        // Handle both API Gateway format and direct invocation
+        let body;
+        if (event.body) {
+            // API Gateway format
+            body = JSON.parse(event.body);
+        } else {
+            // Direct invocation
+            body = event;
+        }
         
-        if (!qrData) {
+        const { qrData, ticketId: directTicketId } = body;
+        
+        let ticketId = null;
+        
+        // Handle both QR data and direct ticket ID
+        if (qrData) {
+            try {
+                // Parse QR data (JSON format)
+                const ticketData = JSON.parse(qrData);
+                ticketId = ticketData.ticketId;
+            } catch (parseError) {
+                // If parsing fails, treat qrData as direct ticket ID
+                ticketId = qrData;
+            }
+        } else if (directTicketId) {
+            ticketId = directTicketId;
+        }
+        
+        if (!ticketId) {
             return {
                 statusCode: 400,
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                body: JSON.stringify({ error: 'QR data required' })
+                body: JSON.stringify({ 
+                    valid: false,
+                    error: 'Ticket ID or QR data required' 
+                })
             };
         }
         
-        // Parse QR data
-        const ticketData = JSON.parse(qrData);
-        const { ticketId } = ticketData;
+        console.log('Validating ticket ID:', ticketId);
         
         // Get ticket directly by ticketId
         const result = await docClient.send(new GetCommand({
@@ -33,21 +60,24 @@ exports.handler = async (event) => {
             Key: { ticketId }
         }));
         
+        console.log('Ticket lookup result:', result.Item ? 'Found' : 'Not found');
+        
         if (!result.Item) {
             return {
-                statusCode: 404,
+                statusCode: 200,
                 headers: {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
                 body: JSON.stringify({
                     valid: false,
-                    error: 'Ticket not found'
+                    message: 'Ticket not found or invalid'
                 })
             };
         }
         
         const ticket = result.Item;
+        console.log('Ticket status:', ticket.status);
         
         // Check if already used
         if (ticket.status === 'used') {
@@ -59,7 +89,14 @@ exports.handler = async (event) => {
                 },
                 body: JSON.stringify({
                     valid: false,
-                    error: 'Ticket has already been used'
+                    message: 'Ticket has already been used',
+                    ticket: {
+                        ticketId: ticket.ticketId,
+                        eventName: ticket.eventName,
+                        attendeeName: ticket.attendeeName,
+                        status: ticket.status,
+                        usedAt: ticket.validatedAt
+                    }
                 })
             };
         }
@@ -78,6 +115,8 @@ exports.handler = async (event) => {
             }
         }));
         
+        console.log('Ticket marked as used successfully');
+        
         return {
             statusCode: 200,
             headers: {
@@ -90,20 +129,29 @@ exports.handler = async (event) => {
                 ticket: {
                     ticketId: ticket.ticketId,
                     eventId: ticket.eventId,
+                    eventName: ticket.eventName,
+                    attendeeName: ticket.attendeeName,
+                    userEmail: ticket.attendeeEmail,
+                    status: 'used',
                     validatedAt: new Date().toISOString()
                 }
             })
         };
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error validating ticket:', error);
+        console.error('Error stack:', error.stack);
         return {
             statusCode: 500,
             headers: {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({ 
+                valid: false,
+                error: 'Internal server error',
+                message: 'Failed to validate ticket. Please try again.'
+            })
         };
     }
 };

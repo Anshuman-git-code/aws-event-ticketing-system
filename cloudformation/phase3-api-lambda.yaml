@@ -68,8 +68,10 @@ Resources:
                   - s3:PutObject
                   - s3:GetObject
                   - s3:PutObjectAcl
+                  - s3:ListBucket
                 Resource:
                   - !Sub 'arn:aws:s3:::${TicketsBucketName}/*'
+                  - !Sub 'arn:aws:s3:::${TicketsBucketName}'
 
   # Process Payment Lambda
   ProcessPaymentFunction:
